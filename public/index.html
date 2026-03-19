@@ -173,6 +173,157 @@ td{padding:10px 12px;font-size:13px}
 .lg-pick-team{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
 .lg-close{background:#f0f0f0;border:0;border-radius:4px;padding:6px 16px;font-weight:700;font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;margin-top:10px}
 .lg-close:hover{background:#e0e0e0;color:#1a1a2e}
+
+/* ============================================================
+   MOBILE RESPONSIVE
+   ============================================================ */
+
+/* Tablets and smaller */
+@media(max-width:768px){
+  html{font-size:12px}
+  .topbar{padding:4px 10px;min-height:38px}
+  .brand{font-size:13px;margin-right:8px}
+  .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:1px}
+  .nav::-webkit-scrollbar{display:none}
+  .nb{padding:4px 8px;font-size:11px;flex-shrink:0}
+  .nsep{margin:0 2px}
+  .atog button{padding:3px 8px;font-size:10px}
+  .fetch-status{font-size:9px}
+  .ctr,.ctrw{padding:12px 10px 30px}
+  .ph h1{font-size:22px}
+  .ph p{font-size:11px}
+  .fun-stats{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+  .fun-card{padding:10px}
+  .fun-val{font-size:15px}
+  .tw{border-radius:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:600px}
+  th{padding:8px 6px;font-size:10px;letter-spacing:.5px}
+  td{padding:8px 6px;font-size:12px}
+  .pth{gap:8px}
+  .prk{font-size:18px}
+  .pnm{font-size:20px}
+  .pcb{margin-left:0;padding:6px 12px}
+  .scd{padding:8px 10px;min-width:60px}
+  .svl{font-size:18px}
+  .rdi{min-width:420px}
+  .rtb{gap:2px}
+  .rt{padding:6px 10px;font-size:12px}
+  .mu{width:150px}
+  .mn{font-size:10px}
+  .mt{padding:3px 5px;min-height:24px;gap:4px}
+  .ms{font-size:8px;min-width:12px}
+  .ml,.mlp{width:14px;height:14px}
+  .ag{grid-template-columns:1fr}
+}
+
+/* Phones */
+@media(max-width:480px){
+  html{font-size:12px}
+  .topbar{padding:4px 8px;gap:0;min-height:44px}
+  .brand{font-size:12px;margin-right:6px;letter-spacing:1px}
+  .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:1px;padding-bottom:2px}
+  .nav::-webkit-scrollbar{display:none}
+  .nb{padding:5px 7px;font-size:11px;flex-shrink:0}
+  .nrk{font-size:8px}
+  .nsep{display:none}
+  .atog{gap:4px}
+  .atog button{padding:4px 8px;font-size:10px}
+  .ctr,.ctrw{padding:10px 8px 24px}
+  .ph{margin-bottom:12px;padding-bottom:10px}
+  .ph h1{font-size:20px;letter-spacing:.5px}
+  .ph p{font-size:11px}
+
+  /* Live bar */
+  .live-bar{gap:6px;margin-bottom:12px}
+  .lc{padding:6px 10px;gap:6px;border-radius:4px}
+
+  /* Fun stats — stack to single column */
+  .fun-stats{grid-template-columns:1fr;gap:6px;margin-bottom:12px}
+  .fun-card{padding:10px 12px}
+  .fun-val{font-size:16px}
+
+  /* Controls */
+  .cr{margin-bottom:10px;gap:6px}
+  .st{font-size:14px}
+  .mp{padding:1px}
+  .mb{padding:3px 8px;font-size:11px}
+
+  /* Table — make scrollable with shadow hint */
+  .tw{border-radius:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+  table{min-width:520px}
+  th{padding:7px 5px;font-size:9px;letter-spacing:.3px}
+  td{padding:7px 5px;font-size:11px}
+  .pt{font-size:15px}
+  .nm{font-size:12px}
+
+  /* Person view */
+  .pth{gap:6px;margin-bottom:12px}
+  .bbk{padding:5px 10px;font-size:12px}
+  .prk{font-size:16px}
+  .pnm{font-size:18px;letter-spacing:0}
+  .pcb{margin-left:0;padding:6px 10px;width:100%}
+
+  /* Stat cards */
+  .srow{gap:4px;margin-bottom:12px}
+  .scd{padding:6px 8px;min-width:0;flex:1 1 30%}
+  .slb{font-size:8px;letter-spacing:.5px}
+  .svl{font-size:16px}
+
+  /* Round breakdown */
+  .rdb{padding:8px;margin-bottom:12px}
+  .rdi{min-width:360px;gap:2px}
+  .rbx{padding:4px 2px}
+  .rbn{font-size:8px;letter-spacing:.3px}
+  .rbp{font-size:8px}
+  .rbs{font-size:11px;gap:4px}
+
+  /* Region tabs */
+  .rtb{gap:2px;margin-bottom:10px}
+  .rt{padding:6px 8px;font-size:11px;letter-spacing:.3px;flex:1;text-align:center}
+
+  /* Legend */
+  .leg{gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .li{font-size:10px}
+
+  /* Bracket matchup cards */
+  .mu{width:140px}
+  .mt{padding:3px 4px;min-height:22px;gap:3px}
+  .ml,.mlp{width:13px;height:13px}
+  .mn{font-size:9px}
+  .ms{font-size:8px;min-width:11px}
+  .md{width:4px;height:4px}
+  .mlt{font-size:6px;padding:1px 4px}
+  .mlsc{font-size:7px;padding:1px 4px}
+  .bc{margin-right:8px}
+  .cl{font-size:9px;margin-bottom:6px}
+  .chd{width:110px;padding:12px}
+  .chd img{width:36px;height:36px}
+  .chd .cdn{font-size:13px}
+
+  /* Admin */
+  .ap{padding:10px;margin-bottom:12px}
+  .ag{grid-template-columns:1fr;gap:4px}
+  .agm{padding:5px 8px}
+  .ain{font-size:12px;padding:5px 8px}
+
+  /* Live popup */
+  .lg-popup{padding:14px;max-height:85vh}
+  .lg-popup h3{font-size:14px}
+  .lg-score{font-size:17px}
+  .lg-pick-name{min-width:80px;font-size:12px}
+}
+
+/* Extra small phones */
+@media(max-width:360px){
+  .brand{font-size:11px}
+  .nb{padding:4px 5px;font-size:10px}
+  .ph h1{font-size:18px}
+  .mu{width:120px}
+  .mt{padding:2px 3px;min-height:20px}
+  .mn{font-size:8px}
+  .scd{flex:1 1 45%}
+  .rt{padding:5px 4px;font-size:10px}
+}
 </style>
 </head>
 <body>
