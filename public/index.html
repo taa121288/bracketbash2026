@@ -333,7 +333,7 @@ td{padding:10px 12px;font-size:13px}
 </head>
 <body>
 <div class="topbar">
-  <div class="brand">Bracket<span>Bash</span> 2026</div>
+  <div class="brand" style="cursor:pointer" onclick="goS()">Bracket<span>Bash</span> 2026</div>
   <div class="nav" id="nav"></div>
   <div class="atog">
     <span class="fetch-status" id="fstat"></span>
@@ -398,74 +398,20 @@ function fetchData(cb){
 function getEl(){var el={};FR.forEach(function(g){if(RES[g[0]]){if(RES[g[0]]===g[2])el[g[4]]=1;else el[g[2]]=1}});FD.forEach(function(g){var id=g[0];if(RES[id]){var nd=GT[id];nd.f.forEach(function(f){if(RES[f]&&RES[f]!==RES[id])el[RES[f]]=1})}});return el}
 function score(p){var el=getEl(),m=S.mode,sc=0,co=0,wr=0,al=0,st={};for(var g=1;g<=63;g++){var pk=p.p[g],ri=GR[g],bp=RP[ri],sd=TS[pk]||1,pts=m==="sb"?bp+sd:m==="sm"?bp*sd:bp;if(RES[g]){if(RES[g]===pk){sc+=pts;co++;st[g]={s:"correct",p:pts}}else{wr++;st[g]={s:"wrong",p:0}}}else if(el[pk]){wr++;st[g]={s:"eliminated",p:0}}else{al++;st[g]={s:"alive",p:pts}}}var mx=sc;for(var g2=1;g2<=63;g2++){if(st[g2]&&st[g2].s==="alive")mx+=st[g2].p}return{sc:sc,co:co,wr:wr,al:al,mx:mx,st:st}}
 function calc(){var el=getEl();ST=PP.map(function(p,i){var r=score(p);
-  // Count Elite 8 teams still alive: games 57-60 are E8, plus FF (61,62) and championship (63)
-  // A player's "E8 teams" = their picks for the E8 games + FF + championship that aren't eliminated
-  var e8alive=0;
-  [57,58,59,60,61,62,63].forEach(function(g){
-    var pk=p.p[g];
-    if(pk&&!el[pk]){
-      // Count unique teams only
-      e8alive++;
-    }
-  });
-  // Actually count unique alive teams picked in E8+ rounds
+  // E8 teams left = unique teams this player picked to WIN their way into the Elite 8
+  // That means: teams picked in E8 games (57-60) as participants = S16 winners
+  // These are the teams they believe will make the Elite 8
+  // Count how many of those teams are still alive (not eliminated)
   var e8teams={};
-  [57,58,59,60,61,62,63].forEach(function(g){var pk=p.p[g];if(pk&&!el[pk])e8teams[pk]=1});
-  return{i:i,n:p.n,ch:p.ch,sc:r.sc,co:r.co,wr:r.wr,al:r.al,mx:r.mx,st:r.st,p:p.p,e8a:Object.keys(e8teams).length}}).sort(function(a,b){return b.sc-a.sc||b.co-a.co});ST.forEach(function(s,i){s.rk=i+1;if(i>0&&s.sc===ST[i-1].sc&&s.co===ST[i-1].co)s.rk=ST[i-1].rk});calcWinPct()}
-function calcWinPct(){
-  // Monte Carlo: simulate remaining games 2000 times, count how often each player finishes #1
-  var gp=Object.keys(RES).length;
-  if(gp===0){ST.forEach(function(s){s.wp=Math.round(100/ST.length)});return}
-  if(gp>=63){ST.forEach(function(s){s.wp=s.rk===1?100:0});return}
-  // Find undecided games (no result yet and picks still alive)
-  var undecided=[];
-  for(var g=1;g<=63;g++){if(!RES[g])undecided.push(g)}
-  // For each undecided game, figure out probability each team wins (seed-based)
-  // Lower seed = higher chance. Use log odds: P(win) ~ 1/(1 + (seed/oppSeed)^1.5)
-  var gamePr={};
-  undecided.forEach(function(gid){
-    var tm=gT(gid,null),t1=tm[0],t2=tm[1];
-    if(!t1.t||!t2.t){gamePr[gid]=0.5;return}
-    var s1=t1.s||8,s2=t2.s||8;
-    // Team 1 win prob based on seed advantage
-    var r=Math.pow(s2/s1,1.2);
-    gamePr[gid]=r/(1+r);
-  });
-  var SIMS=2000,wins=[];
-  ST.forEach(function(){wins.push(0)});
-  for(var sim=0;sim<SIMS;sim++){
-    // For each player, add random points for undecided alive picks
-    var scores=[];
-    ST.forEach(function(s,idx){
-      var sc=s.sc;
-      for(var g=1;g<=63;g++){
-        if(s.st[g]&&s.st[g].s==="alive"){
-          // Random: did their pick actually win this game?
-          var ri=GR[g],bp=RP[ri];
-          var pts=S.mode==="sb"?bp+(TS[s.p[g]]||1):S.mode==="sm"?bp*(TS[s.p[g]]||1):bp;
-          // Approximate: chance their pick wins ~ seed-based
-          var pk=s.p[g],pkSeed=TS[pk]||8;
-          // Crude per-pick hit rate: lower seed picks more likely correct
-          var hitRate=Math.max(0.1,Math.min(0.9,1-pkSeed/20));
-          if(Math.random()<hitRate)sc+=pts;
-        }
-      }
-      scores.push(sc);
-    });
-    // Find winner of this sim
-    var best=-1,bestIdx=-1;
-    scores.forEach(function(sc,idx){if(sc>best){best=sc;bestIdx=idx}});
-    // Handle ties: split credit
-    var tiedWith=[];
-    scores.forEach(function(sc,idx){if(sc===best)tiedWith.push(idx)});
-    tiedWith.forEach(function(idx){wins[idx]+=1/tiedWith.length});
+  // Games 57-60 are E8 matchups. Each E8 game has 2 teams from S16 winners.
+  // The player's picks for games 49-56 (Sweet 16) determine who they think makes E8.
+  // Simpler: just get all unique teams they picked in games 49+ (S16 through championship)
+  // Those are the teams they think make E8 or further.
+  for(var g=49;g<=63;g++){
+    var pk=p.p[g];
+    if(pk&&!el[pk])e8teams[pk]=1;
   }
-  ST.forEach(function(s,i){
-    s.wp=Math.round(wins[i]/SIMS*100);
-  });
-  // Ensure leader gets at least 1%
-  if(ST[0]&&ST[0].wp<1)ST[0].wp=1;
-}
+  return{i:i,n:p.n,ch:p.ch,sc:r.sc,co:r.co,wr:r.wr,al:r.al,mx:r.mx,st:r.st,p:p.p,e8a:Object.keys(e8teams).length}}).sort(function(a,b){return b.sc-a.sc||b.co-a.co});ST.forEach(function(s,i){s.rk=i+1;if(i>0&&s.sc===ST[i-1].sc&&s.co===ST[i-1].co)s.rk=ST[i-1].rk})}
 function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 
 // NAV
@@ -519,7 +465,7 @@ if(lk.length){h+='<div class="live-bar">';lk.forEach(function(g){var d=LG[g];h+=
 h+=funStats();
 h+='<div class="cr"><div class="st">Overall Standings</div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#9ca3af;font-weight:500">Total Brackets: '+PP.length+'</span><div class="mp">';
 [["std","Standard"],["sb","+Seed"],["sm","\u00d7Seed"]].forEach(function(m){h+='<button class="mb'+(S.mode===m[0]?" on":"")+'" onclick="setM(\''+m[0]+'\')">'+m[1]+'</button>'});
-h+='</div></div></div><div class="tw"><table><thead><tr><th class="c" style="width:50px">RANK</th><th class="c" style="width:60px">CHAMPION</th><th class="l">BRACKET NAME</th><th class="c">PTS</th><th class="c">WIN%</th><th class="c">E8 LEFT</th><th class="c">MAX</th><th class="c">CPK</th><th class="c">RD1</th><th class="c">RD2</th><th class="c">S16</th><th class="c">E8</th><th class="c">FF</th><th class="c">NCG</th></tr></thead><tbody>';
+h+='</div></div></div><div class="tw"><table><thead><tr><th class="c" style="width:50px">RANK</th><th class="c" style="width:60px">CHAMPION</th><th class="l">BRACKET NAME</th><th class="c">PTS</th><th class="c">E8 LEFT</th><th class="c">MAX</th><th class="c">CPK</th><th class="c">RD1</th><th class="c">RD2</th><th class="c">S16</th><th class="c">E8</th><th class="c">FF</th><th class="c">NCG</th></tr></thead><tbody>';
 var topPts=ST[0]?ST[0].sc:0;
 ST.forEach(function(p){
   var isTaylor=PP[p.i].n==="Taylor Anderson";
@@ -530,7 +476,6 @@ ST.forEach(function(p){
   h+='<td class="c" style="white-space:nowrap">'+li(p.ch,24)+'<span class="mono" style="font-size:9px;color:#9ca3af;margin-left:2px">'+(TS[p.ch]||"")+'</span></td>';
   h+='<td class="nm" style="font-size:15px">'+esc(p.n)+'</td>';
   h+='<td class="c mono pt">'+p.sc+'</td>';
-  h+='<td class="c mono" style="font-weight:700;color:'+(p.wp>=20?'#16a34a':p.wp>=5?'#2563eb':'#9ca3af')+'">'+p.wp+'%</td>';
   h+='<td class="c mono" style="font-weight:700;color:'+(p.e8a>=3?'#16a34a':p.e8a>=1?'#2563eb':'#dc2626')+'">'+p.e8a+'</td>';
   h+='<td class="c mono" style="color:#6b7280">'+p.mx+'</td>';
   h+='<td class="c mono" style="color:#1a1a2e;font-weight:600">'+p.co+'</td>';
@@ -557,7 +502,7 @@ h+='</div>';return h}
 function rPerson(){var a=document.getElementById("app"),pi=S.pi,pr=PP[pi],d=null;ST.forEach(function(s){if(s.i===pi)d=s});if(!d)return;
 var topPts=ST[0]?ST[0].sc:0,back=topPts-d.sc;
 var h='<div class="ctrw"><div class="pth"><button class="bbk" onclick="goS()">\u2190 Standings</button><span class="prk">#'+d.rk+'</span><span class="pnm">'+esc(pr.n)+'</span><div class="pcb">'+li(pr.ch,28)+'<div><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:1px">Champion</div><div style="font-weight:700;color:#1a1a2e;font-size:14px">('+(TS[pr.ch]||"")+') '+esc(pr.ch)+'</div></div></div></div>';
-var cards=[["Points",d.sc,"#2563eb"],["Win %",d.wp+"%",d.wp>=20?"#16a34a":d.wp>=5?"#2563eb":"#9ca3af"],["E8 Left",d.e8a,d.e8a>=3?"#16a34a":d.e8a>=1?"#2563eb":"#dc2626"],["Correct",d.co,"#16a34a"],["Alive",d.al,"#2563eb"],["Max",d.mx,"#6b7280"]];
+var cards=[["Points",d.sc,"#2563eb"],["E8 Left",d.e8a,d.e8a>=3?"#16a34a":d.e8a>=1?"#2563eb":"#dc2626"],["Correct",d.co,"#16a34a"],["Wrong",d.wr,"#dc2626"],["Alive",d.al,"#2563eb"],["Max",d.mx,"#6b7280"]];
 h+='<div class="srow">';cards.forEach(function(c){h+='<div class="scd"><div class="slb">'+c[0]+'</div><div class="svl" style="color:'+c[2]+'">'+c[1]+'</div></div>'});h+='</div>';
 h+='<div class="rdb"><div class="rdi">';RN.forEach(function(nm,ri){var co=0,wr=0,al=0;for(var g=1;g<=63;g++){if(GR[g]===ri&&d.st[g]){var s=d.st[g].s;if(s==="correct")co++;else if(s==="wrong"||s==="eliminated")wr++;else al++}}h+='<div class="rbx"><div class="rbn">'+nm+'</div><div class="rbp">'+RP[ri]+'pt</div><div class="rbs"><span class="sw">'+co+'</span><span class="slash">/</span><span class="sl">'+wr+'</span><span class="slash">/</span><span class="sa">'+al+'</span></div></div>'});h+='</div></div>';
 var regs=["East","South","West","Midwest","Final Four"];
