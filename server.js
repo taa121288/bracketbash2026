@@ -11,9 +11,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'marchmadness2026';
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // BRACKET DATA (needed server-side for ESPN matching)
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 const ESPN_IDS = {
   "Duke":150,"Siena":2561,"Ohio St":194,"TCU":2628,"St. John's":2599,
   "N. Iowa":2460,"Kansas":2305,"Cal Baptist":2856,"Louisville":97,"SFLA":58,
@@ -30,7 +30,7 @@ const ESPN_IDS = {
   "Kentucky":96,"Santa Clara":2541,"Iowa St":66,"Tenn. State":2634
 };
 
-// Reverse lookup: ESPN ID → team name
+// Reverse lookup: ESPN ID â team name
 const ID_TO_TEAM = {};
 for (const [name, id] of Object.entries(ESPN_IDS)) {
   ID_TO_TEAM[String(id)] = name;
@@ -64,9 +64,9 @@ const GAME_TREE = {};
 FIRST_ROUND.forEach(g => { GAME_TREE[g[0]] = { type: 'first', teams: [g[1], g[2]] }; });
 FEEDS.forEach(g => { GAME_TREE[g[0]] = { type: 'later', feeders: [g[1], g[2]] }; });
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // DATA PERSISTENCE
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 function readData() {
   try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); }
   catch { return { results: {}, liveGames: {}, lastFetch: null }; }
@@ -75,9 +75,9 @@ function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // ESPN SCOREBOARD FETCHER
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 function httpGet(url) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers: { 'User-Agent': 'BracketBash/1.0' } }, res => {
@@ -138,8 +138,15 @@ async function fetchEspnScores() {
   }
 
   for (const dateStr of dates) {
+    // Try multiple group IDs â ESPN changes the tournament group across years
+    // groups=100 = NCAA Tournament, groups=50 = conference tournaments, no group = all games
+    const urls = [
+      `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateStr}&groups=100&limit=100`,
+      `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateStr}&limit=100`
+    ];
+    const seen = new Set();
+    for (const url of urls) {
     try {
-      const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateStr}&groups=100&limit=100`;
       const json = await httpGet(url);
       if (!json.events) continue;
 
@@ -153,11 +160,21 @@ async function fetchEspnScores() {
         const id2 = c2.team && c2.team.id;
         if (!id1 || !id2) continue;
 
+        // Skip if we already processed this matchup from another group URL
+        const matchKey = [id1, id2].sort().join('-');
+        if (seen.has(matchKey)) continue;
+        seen.add(matchKey);
+
         const isComplete = comp.status && comp.status.type && comp.status.type.completed;
         const isInProgress = comp.status && comp.status.type &&
-          comp.status.type.name === 'STATUS_IN_PROGRESS';
+          (comp.status.type.name === 'STATUS_IN_PROGRESS' || comp.status.type.name === 'STATUS_HALFTIME' || comp.status.type.state === 'in');
 
         const gameId = matchEspnGame(id1, id2, data.results);
+        const team1Name = ID_TO_TEAM[String(id1)];
+        const team2Name = ID_TO_TEAM[String(id2)];
+        if (!gameId && (team1Name || team2Name)) {
+          console.log(`  â ï¸  Partial match: ${team1Name||id1} vs ${team2Name||id2} â one team ID may be wrong`);
+        }
 
         if (gameId && isComplete) {
           // Find winner
@@ -167,7 +184,7 @@ async function fetchEspnScores() {
             if (winnerName && !data.results[String(gameId)]) {
               data.results[String(gameId)] = winnerName;
               updated = true;
-              console.log(`  ✅ Game ${gameId}: ${winnerName} wins`);
+              console.log(`  â Game ${gameId}: ${winnerName} wins`);
             }
           }
         } else if (gameId && isInProgress) {
@@ -186,8 +203,9 @@ async function fetchEspnScores() {
         }
       }
     } catch (e) {
-      // Skip dates that fail — ESPN might not have data for them
+      // Skip URLs/dates that fail â ESPN might not have data for them
     }
+    } // end of urls loop
   }
 
   data.liveGames = liveGames;
@@ -198,23 +216,23 @@ async function fetchEspnScores() {
   return data;
 }
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // AUTO-FETCH: poll ESPN every 2 minutes
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 let fetchInterval = null;
 function startAutoFetch() {
-  console.log('  📡 Auto-fetch: checking ESPN every 2 minutes');
+  console.log('  ð¡ Auto-fetch: checking ESPN every 2 minutes');
   // Initial fetch
-  fetchEspnScores().then(() => console.log('  📡 Initial ESPN fetch complete')).catch(() => {});
+  fetchEspnScores().then(() => console.log('  ð¡ Initial ESPN fetch complete')).catch(() => {});
   // Then every 2 minutes
   fetchInterval = setInterval(() => {
-    fetchEspnScores().catch(e => console.log('  ⚠️  ESPN fetch error:', e.message));
+    fetchEspnScores().catch(e => console.log('  â ï¸  ESPN fetch error:', e.message));
   }, 120000);
 }
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // API ENDPOINTS
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 app.get('/api/results', (req, res) => {
   res.json(readData());
 });
@@ -252,13 +270,13 @@ app.post('/api/refresh', async (req, res) => {
   }
 });
 
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 // START
-// ──────────────────────────────────────────────
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 app.listen(PORT, () => {
   console.log('');
-  console.log('  🏀 BracketBash 2026 is running!');
-  console.log('  ─────────────────────────────────');
+  console.log('  ð BracketBash 2026 is running!');
+  console.log('  âââââââââââââââââââââââââââââââââ');
   console.log(`  Open:      http://localhost:${PORT}`);
   console.log(`  Admin:     http://localhost:${PORT}/#admin`);
   console.log(`  Password:  ${ADMIN_PASSWORD}`);
