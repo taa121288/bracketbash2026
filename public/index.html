@@ -183,9 +183,8 @@ td{padding:10px 12px;font-size:13px}
   html{font-size:12px}
   .topbar{padding:4px 10px;min-height:38px}
   .brand{font-size:13px;margin-right:8px}
-  .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:1px}
-  .nav::-webkit-scrollbar{display:none}
-  .nb{padding:6px 10px;font-size:14px;flex-shrink:0}
+  .nav{flex-wrap:wrap;gap:2px}
+  .nb{padding:5px 10px;font-size:13px;flex-shrink:0}
   .nsep{margin:0 2px}
   .atog button{padding:3px 8px;font-size:10px}
   .fetch-status{font-size:9px}
@@ -219,15 +218,21 @@ td{padding:10px 12px;font-size:13px}
 /* Phones */
 @media(max-width:480px){
   html{font-size:12px}
-  .topbar{padding:4px 8px;gap:0;min-height:44px}
-  .brand{font-size:12px;margin-right:6px;letter-spacing:1px}
-  .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:1px;padding-bottom:2px}
-  .nav::-webkit-scrollbar{display:none}
-  .nb{padding:8px 12px;font-size:15px;flex-shrink:0}
-  .nrk{font-size:11px}
-  .nsep{display:none}
-  .atog{gap:4px}
+
+  /* Topbar: stack brand/admin on top, nav names below */
+  .topbar{flex-wrap:wrap;padding:6px 10px 0;min-height:auto;gap:0}
+  .brand{font-size:13px;margin-right:auto;letter-spacing:1px}
+  .atog{gap:4px;order:0}
   .atog button{padding:4px 8px;font-size:10px}
+  .fetch-status{display:none}
+
+  /* Nav wraps to full-width rows below brand */
+  .nav{order:1;width:100%;flex:none;flex-wrap:wrap;gap:4px;padding:8px 0 8px;margin-top:4px;border-top:1px solid #f0f0f0}
+  .nb{padding:6px 10px;font-size:14px;flex-shrink:0;border-radius:6px;border:1px solid #e0e0e0;background:#fff}
+  .nb.on{border-color:#2563eb;background:#2563eb;color:#fff}
+  .nrk{font-size:10px;opacity:.7}
+  .nsep{display:none}
+
   .ctr,.ctrw{padding:10px 8px 24px}
   .ph{margin-bottom:12px;padding-bottom:10px}
   .ph h1{font-size:20px;letter-spacing:.5px}
@@ -237,18 +242,18 @@ td{padding:10px 12px;font-size:13px}
   .live-bar{gap:6px;margin-bottom:12px}
   .lc{padding:6px 10px;gap:6px;border-radius:4px}
 
-  /* Fun stats — stack to single column */
-  .fun-stats{grid-template-columns:1fr;gap:6px;margin-bottom:12px}
+  /* Fun stats — 2 columns on phone, not 1 */
+  .fun-stats{grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px}
   .fun-card{padding:10px 12px}
   .fun-val{font-size:16px}
 
   /* Controls */
-  .cr{margin-bottom:10px;gap:6px}
+  .cr{margin-bottom:10px;gap:6px;flex-direction:column;align-items:flex-start}
   .st{font-size:14px}
   .mp{padding:1px}
   .mb{padding:3px 8px;font-size:11px}
 
-  /* Table — make scrollable with shadow hint */
+  /* Table — scrollable */
   .tw{border-radius:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
   table{min-width:520px}
   th{padding:7px 5px;font-size:9px;letter-spacing:.3px}
@@ -256,18 +261,18 @@ td{padding:10px 12px;font-size:13px}
   .pt{font-size:15px}
   .nm{font-size:12px}
 
-  /* Person view */
-  .pth{gap:6px;margin-bottom:12px}
+  /* Person view header */
+  .pth{gap:6px;margin-bottom:12px;flex-direction:column;align-items:flex-start}
   .bbk{padding:5px 10px;font-size:12px}
-  .prk{font-size:16px}
-  .pnm{font-size:18px;letter-spacing:0}
+  .prk{font-size:20px}
+  .pnm{font-size:22px;letter-spacing:0}
   .pcb{margin-left:0;padding:6px 10px;width:100%}
 
-  /* Stat cards */
+  /* Stat cards — 3 per row */
   .srow{gap:4px;margin-bottom:12px}
-  .scd{padding:6px 8px;min-width:0;flex:1 1 30%}
+  .scd{padding:8px 8px;min-width:0;flex:1 1 30%}
   .slb{font-size:8px;letter-spacing:.5px}
-  .svl{font-size:16px}
+  .svl{font-size:18px}
 
   /* Round breakdown */
   .rdb{padding:8px;margin-bottom:12px}
@@ -277,24 +282,24 @@ td{padding:10px 12px;font-size:13px}
   .rbp{font-size:8px}
   .rbs{font-size:11px;gap:4px}
 
-  /* Region tabs */
-  .rtb{gap:2px;margin-bottom:10px}
-  .rt{padding:6px 8px;font-size:11px;letter-spacing:.3px;flex:1;text-align:center}
+  /* Region tabs — scrollable row */
+  .rtb{gap:3px;margin-bottom:10px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .rt{padding:8px 12px;font-size:13px;letter-spacing:.3px;flex-shrink:0;white-space:nowrap}
 
   /* Legend */
   .leg{gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .li{font-size:10px}
 
-  /* Bracket matchup cards */
-  .mu{width:140px}
-  .mt{padding:3px 4px;min-height:22px;gap:3px}
-  .ml,.mlp{width:13px;height:13px}
-  .mn{font-size:9px}
+  /* Bracket matchup cards — slightly wider for readability */
+  .mu{width:148px}
+  .mt{padding:4px 5px;min-height:24px;gap:3px}
+  .ml,.mlp{width:14px;height:14px}
+  .mn{font-size:10px}
   .ms{font-size:8px;min-width:11px}
   .md{width:4px;height:4px}
   .mlt{font-size:6px;padding:1px 4px}
   .mlsc{font-size:7px;padding:1px 4px}
-  .bc{margin-right:8px}
+  .bc{margin-right:10px}
   .cl{font-size:9px;margin-bottom:6px}
   .chd{width:110px;padding:12px}
   .chd img{width:36px;height:36px}
@@ -318,11 +323,11 @@ td{padding:10px 12px;font-size:13px}
   .brand{font-size:11px}
   .nb{padding:7px 10px;font-size:14px}
   .ph h1{font-size:18px}
-  .mu{width:120px}
+  .mu{width:130px}
   .mt{padding:2px 3px;min-height:20px}
-  .mn{font-size:8px}
+  .mn{font-size:9px}
   .scd{flex:1 1 45%}
-  .rt{padding:5px 4px;font-size:10px}
+  .rt{padding:6px 8px;font-size:12px}
 }
 </style>
 </head>
@@ -392,7 +397,33 @@ function fetchData(cb){
 // SCORING
 function getEl(){var el={};FR.forEach(function(g){if(RES[g[0]]){if(RES[g[0]]===g[2])el[g[4]]=1;else el[g[2]]=1}});FD.forEach(function(g){var id=g[0];if(RES[id]){var nd=GT[id];nd.f.forEach(function(f){if(RES[f]&&RES[f]!==RES[id])el[RES[f]]=1})}});return el}
 function score(p){var el=getEl(),m=S.mode,sc=0,co=0,wr=0,al=0,st={};for(var g=1;g<=63;g++){var pk=p.p[g],ri=GR[g],bp=RP[ri],sd=TS[pk]||1,pts=m==="sb"?bp+sd:m==="sm"?bp*sd:bp;if(RES[g]){if(RES[g]===pk){sc+=pts;co++;st[g]={s:"correct",p:pts}}else{wr++;st[g]={s:"wrong",p:0}}}else if(el[pk]){wr++;st[g]={s:"eliminated",p:0}}else{al++;st[g]={s:"alive",p:pts}}}var mx=sc;for(var g2=1;g2<=63;g2++){if(st[g2]&&st[g2].s==="alive")mx+=st[g2].p}return{sc:sc,co:co,wr:wr,al:al,mx:mx,st:st}}
-function calc(){ST=PP.map(function(p,i){var r=score(p);return{i:i,n:p.n,ch:p.ch,sc:r.sc,co:r.co,wr:r.wr,al:r.al,mx:r.mx,st:r.st,p:p.p}}).sort(function(a,b){return b.sc-a.sc||b.co-a.co});ST.forEach(function(s,i){s.rk=i+1;if(i>0&&s.sc===ST[i-1].sc&&s.co===ST[i-1].co)s.rk=ST[i-1].rk})}
+function calc(){ST=PP.map(function(p,i){var r=score(p);return{i:i,n:p.n,ch:p.ch,sc:r.sc,co:r.co,wr:r.wr,al:r.al,mx:r.mx,st:r.st,p:p.p}}).sort(function(a,b){return b.sc-a.sc||b.co-a.co});ST.forEach(function(s,i){s.rk=i+1;if(i>0&&s.sc===ST[i-1].sc&&s.co===ST[i-1].co)s.rk=ST[i-1].rk});calcWinPct()}
+function calcWinPct(){
+  var top=ST[0]?ST[0].sc:0,gp=Object.keys(RES).length;
+  if(gp===0){ST.forEach(function(s){s.wp=Math.round(100/ST.length)});return}
+  // Upside = how many points above the current leader each player could get
+  var raw=[];var total=0;
+  ST.forEach(function(s){
+    var upside=s.mx-top;
+    if(upside<0)upside=0;
+    // Weight by current score advantage/disadvantage too
+    var edge=s.sc-top; // negative or 0 for non-leaders
+    var w=Math.max(0,upside+edge*0.5+1); // +1 so leader with 0 upside still gets some
+    // Also factor in alive picks ratio
+    var aliveRatio=s.al>0?s.al/(s.al+s.wr):0;
+    w=w*(0.5+aliveRatio*0.5);
+    raw.push(w);total+=w;
+  });
+  ST.forEach(function(s,i){
+    s.wp=total>0?Math.round(raw[i]/total*100):0;
+  });
+  // Ensure at least 1% for anyone who can still win, and percentages sum reasonably
+  var anyCanWin=false;
+  ST.forEach(function(s){if(s.mx>=top)anyCanWin=true});
+  if(anyCanWin){
+    ST.forEach(function(s){if(s.mx>=top&&s.wp<1)s.wp=1;if(s.mx<top)s.wp=0});
+  }
+}
 function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 
 // NAV
@@ -446,7 +477,7 @@ if(lk.length){h+='<div class="live-bar">';lk.forEach(function(g){var d=LG[g];h+=
 h+=funStats();
 h+='<div class="cr"><div class="st">Overall Standings</div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#9ca3af;font-weight:500">Total Brackets: '+PP.length+'</span><div class="mp">';
 [["std","Standard"],["sb","+Seed"],["sm","\u00d7Seed"]].forEach(function(m){h+='<button class="mb'+(S.mode===m[0]?" on":"")+'" onclick="setM(\''+m[0]+'\')">'+m[1]+'</button>'});
-h+='</div></div></div><div class="tw"><table><thead><tr><th class="c" style="width:50px">RANK</th><th class="c" style="width:60px">CHAMPION</th><th class="l">BRACKET NAME</th><th class="c">PTS</th><th class="c">MAX</th><th class="c">CPK</th><th class="c">RD1</th><th class="c">RD2</th><th class="c">S16</th><th class="c">E8</th><th class="c">FF</th><th class="c">NCG</th></tr></thead><tbody>';
+h+='</div></div></div><div class="tw"><table><thead><tr><th class="c" style="width:50px">RANK</th><th class="c" style="width:60px">CHAMPION</th><th class="l">BRACKET NAME</th><th class="c">PTS</th><th class="c">WIN%</th><th class="c">MAX</th><th class="c">CPK</th><th class="c">RD1</th><th class="c">RD2</th><th class="c">S16</th><th class="c">E8</th><th class="c">FF</th><th class="c">NCG</th></tr></thead><tbody>';
 var topPts=ST[0]?ST[0].sc:0;
 ST.forEach(function(p){
   var isTaylor=PP[p.i].n==="Taylor Anderson";
@@ -457,6 +488,7 @@ ST.forEach(function(p){
   h+='<td class="c">'+li(p.ch,32)+'</td>';
   h+='<td class="nm" style="font-size:15px">'+esc(p.n)+'</td>';
   h+='<td class="c mono pt">'+p.sc+'</td>';
+  h+='<td class="c mono" style="font-weight:700;color:'+(p.wp>=20?'#16a34a':p.wp>=5?'#2563eb':'#9ca3af')+'">'+p.wp+'%</td>';
   h+='<td class="c mono" style="color:#6b7280">'+p.mx+'</td>';
   h+='<td class="c mono" style="color:#1a1a2e;font-weight:600">'+p.co+'</td>';
   for(var ri=0;ri<6;ri++){h+='<td class="c mono" style="color:'+(rc[ri]>0?"#1a1a2e":"#d1d5db")+'">'+(rc[ri]>0?rc[ri]:"-")+'</td>'}
@@ -482,7 +514,7 @@ h+='</div>';return h}
 function rPerson(){var a=document.getElementById("app"),pi=S.pi,pr=PP[pi],d=null;ST.forEach(function(s){if(s.i===pi)d=s});if(!d)return;
 var topPts=ST[0]?ST[0].sc:0,back=topPts-d.sc;
 var h='<div class="ctrw"><div class="pth"><button class="bbk" onclick="goS()">\u2190 Standings</button><span class="prk">#'+d.rk+'</span><span class="pnm">'+esc(pr.n)+'</span><div class="pcb">'+li(pr.ch,28)+'<div><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:1px">Champion</div><div style="font-weight:700;color:#1a1a2e;font-size:14px">'+esc(pr.ch)+'</div></div></div></div>';
-var cards=[["Points",d.sc,"#2563eb"],["Correct",d.co,"#16a34a"],["Wrong",d.wr,"#dc2626"],["Alive",d.al,"#2563eb"],["Max",d.mx,"#6b7280"],["Back",back===0?"\u2605":"-"+back,back===0?"#16a34a":"#dc2626"]];
+var cards=[["Points",d.sc,"#2563eb"],["Win %",d.wp+"%",d.wp>=20?"#16a34a":d.wp>=5?"#2563eb":"#9ca3af"],["Correct",d.co,"#16a34a"],["Wrong",d.wr,"#dc2626"],["Alive",d.al,"#2563eb"],["Max",d.mx,"#6b7280"]];
 h+='<div class="srow">';cards.forEach(function(c){h+='<div class="scd"><div class="slb">'+c[0]+'</div><div class="svl" style="color:'+c[2]+'">'+c[1]+'</div></div>'});h+='</div>';
 h+='<div class="rdb"><div class="rdi">';RN.forEach(function(nm,ri){var co=0,wr=0,al=0;for(var g=1;g<=63;g++){if(GR[g]===ri&&d.st[g]){var s=d.st[g].s;if(s==="correct")co++;else if(s==="wrong"||s==="eliminated")wr++;else al++}}h+='<div class="rbx"><div class="rbn">'+nm+'</div><div class="rbp">'+RP[ri]+'pt</div><div class="rbs"><span class="sw">'+co+'</span><span class="slash">/</span><span class="sl">'+wr+'</span><span class="slash">/</span><span class="sa">'+al+'</span></div></div>'});h+='</div></div>';
 var regs=["East","South","West","Midwest","Final Four"];
