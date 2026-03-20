@@ -442,35 +442,29 @@ function showH2H(){
   };
 }
 
-// COUNTDOWN TO NEXT TIP-OFF
-function nextGameCountdown(){
-  var now=new Date();
-  var times=[
-    {h:12,m:15,label:'12:15 PM ET'},
-    {h:14,m:45,label:'2:45 PM ET'},
-    {h:19,m:9,label:'7:09 PM ET'},
-    {h:21,m:39,label:'9:39 PM ET'}
-  ];
-  var liveKeys=Object.keys(LG);
-  if(liveKeys.length>0)return'Games in progress!';
+// UPCOMING GAMES
+function upcomingGamesHTML(){
   var resultCount=Object.keys(RES).length;
-  if(resultCount>=63)return'Tournament Complete! 🏆';
-  
-  var nextTime=null;
-  for(var i=0;i<times.length;i++){
-    var t=new Date();
-    t.setHours(times[i].h,times[i].m,0);
-    if(t>now){nextTime=t;break}
+  if(resultCount>=63)return'<div style="font-size:14px;font-weight:700;color:#2563eb">Tournament Complete! \ud83c\udfc6</div>';
+  // Find games that are ready to play: no result yet, but both teams are known
+  var upcoming=[];
+  for(var g=1;g<=63;g++){
+    if(RES[g])continue; // already has result
+    if(LG[g])continue; // currently live
+    var tm=gT(g,null);
+    if(tm[0].t&&tm[1].t)upcoming.push({g:g,t1:tm[0].t,s1:tm[0].s,t2:tm[1].t,s2:tm[1].s});
+    if(upcoming.length>=4)break;
   }
-  if(!nextTime){
-    nextTime=new Date();
-    nextTime.setDate(nextTime.getDate()+1);
-    nextTime.setHours(times[0].h,times[0].m,0);
-  }
-  var diff=Math.max(0,nextTime-now);
-  var hrs=Math.floor(diff/3600000);
-  var mins=Math.floor((diff%3600000)/60000);
-  return 'Next games in '+hrs+'h '+mins+'m';
+  if(upcoming.length===0)return'<div style="font-size:12px;color:#9ca3af">Waiting for earlier rounds to finish</div>';
+  var h='';
+  upcoming.forEach(function(u){
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f0f0f0">';
+    h+='<div style="display:flex;align-items:center;gap:3px;flex:1;min-width:0">'+li(u.t1,16)+'<span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(u.s1?'('+u.s1+') ':'')+esc(u.t1)+'</span></div>';
+    h+='<span style="font-size:10px;color:#9ca3af;font-weight:700">vs</span>';
+    h+='<div style="display:flex;align-items:center;gap:3px;flex:1;min-width:0;justify-content:flex-end"><span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(u.t2)+(u.s2?' ('+u.s2+')':'')+'</span>'+li(u.t2,16)+'</div>';
+    h+='</div>';
+  });
+  return h;
 }
 
 // ============================================================
@@ -563,7 +557,7 @@ function funStats(){
   var bigUpset=aliveSeeds[0];
   var canWin=ST.filter(function(s){return s.mx>=leaderPts}).length;
 
-  var h='<div class="fun-stats">';h+='<div class="fun-card"><div class="fun-label">Next Tip-Off</div><div class="fun-val" style="font-size:13px;margin-top:4px">'+nextGameCountdown()+'</div></div>';
+  var h='<div class="fun-stats">';h+='<div class="fun-card"><div class="fun-label">Up Next</div>'+upcomingGamesHTML()+'</div>';
   h+='<div class="fun-card"><div class="fun-label">Tournament Progress</div><div class="fun-val">'+gamesPlayed+' / 63</div><div class="pbar"><div class="pbar-fill" style="width:'+pct+'%;background:#2563eb"></div></div><div class="gb"><span>'+pct+'% complete</span><span>'+gamesLeft+' games left</span></div></div>';
   h+='<div class="fun-card"><div class="fun-label">Can Still Win</div><div class="fun-val">'+canWin+' / '+PP.length+'</div><div class="fun-sub">players with max possible \u2265 leader</div></div>';
   h+='<div class="fun-card"><div class="fun-label">Points Back from #1</div>';
