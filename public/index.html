@@ -468,7 +468,7 @@ h+='<div class="cr"><div class="st">Overall Standings</div><div style="display:f
 h+='</div></div></div><div class="tw"><table><thead><tr><th class="c" style="width:50px">RANK</th><th class="c" style="width:60px">CHAMPION</th><th class="l">BRACKET NAME</th><th class="c">PTS</th><th class="c">E8 LEFT</th><th class="c">MAX</th><th class="c">CPK</th><th class="c">RD1</th><th class="c">RD2</th><th class="c">S16</th><th class="c">E8</th><th class="c">FF</th><th class="c">NCG</th></tr></thead><tbody>';
 var topPts=ST[0]?ST[0].sc:0;
 ST.forEach(function(p){
-  var isTaylor=PP[p.i].n==="Taylor Anderson";
+  var isTaylor=false;
   var rc=roundCounts(p);
   var rdLabels=["RD1","RD2","S16","E8","FF","NCG"];
   h+='<tr onclick="goP('+p.i+')" style="'+(isTaylor?"border-left:3px solid #2563eb;background:#f0f7ff":"border-left:3px solid transparent")+'">';
