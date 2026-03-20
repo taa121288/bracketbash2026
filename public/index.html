@@ -442,27 +442,61 @@ function showH2H(){
   };
 }
 
-// UPCOMING GAMES
+// UPCOMING GAMES — Schedule times in MST (ET - 2h)
+// 2026 NCAA Tournament schedule (game IDs mapped to dates/times in ET, converted to MST)
+var SCHEDULE={};
+// R1 Day 1: Thu Mar 19 — games 1-8 (East/South)
+[1,2,3,4,5,6,7,8].forEach(function(g,i){var times=["10:15 AM","12:45 PM","4:30 PM","5:15 PM","7:00 PM","7:10 PM","7:45 PM","9:40 PM"];SCHEDULE[g]={d:"Thu 3/19",t:times[i]||"TBD"}});
+// R1 Day 1: games 9-16 (South cont.)
+[9,10,11,12,13,14,15,16].forEach(function(g,i){var times=["10:15 AM","12:45 PM","4:30 PM","5:15 PM","7:00 PM","7:10 PM","7:45 PM","9:40 PM"];SCHEDULE[g]={d:"Thu 3/19",t:times[i]||"TBD"}});
+// R1 Day 2: Fri Mar 20 — games 17-32 (West/Midwest)
+[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32].forEach(function(g,i){var times=["10:15 AM","12:45 PM","4:30 PM","5:00 PM","5:15 PM","7:00 PM","7:10 PM","7:45 PM","10:15 AM","12:45 PM","4:30 PM","5:00 PM","5:15 PM","7:00 PM","7:10 PM","9:40 PM"];SCHEDULE[g]={d:"Fri 3/20",t:times[i]||"TBD"}});
+// R2: Sat Mar 21 & Sun Mar 22
+[33,34,35,36,37,38,39,40].forEach(function(g,i){var times=["10:10 AM","12:40 PM","3:30 PM","4:15 PM","5:15 PM","7:10 PM","7:45 PM","9:40 PM"];SCHEDULE[g]={d:"Sat 3/21",t:times[i]||"TBD"}});
+[41,42,43,44,45,46,47,48].forEach(function(g,i){var times=["10:10 AM","12:40 PM","3:30 PM","4:15 PM","5:15 PM","7:10 PM","7:45 PM","9:40 PM"];SCHEDULE[g]={d:"Sun 3/22",t:times[i]||"TBD"}});
+// S16: Thu Mar 26 & Fri Mar 27
+[49,50,51,52].forEach(function(g,i){SCHEDULE[g]={d:"Thu 3/26",t:["5:09 PM","7:39 PM","5:39 PM","8:09 PM"][i]}});
+[53,54,55,56].forEach(function(g,i){SCHEDULE[g]={d:"Fri 3/27",t:["5:09 PM","7:39 PM","5:39 PM","8:09 PM"][i]}});
+// E8: Sat Mar 28 & Sun Mar 29
+[57,58].forEach(function(g,i){SCHEDULE[g]={d:"Sat 3/28",t:["4:09 PM","6:49 PM"][i]}});
+[59,60].forEach(function(g,i){SCHEDULE[g]={d:"Sun 3/29",t:["12:09 PM","4:09 PM"][i]}});
+// FF: Sat Apr 4
+SCHEDULE[61]={d:"Sat 4/4",t:"4:09 PM"};SCHEDULE[62]={d:"Sat 4/4",t:"6:49 PM"};
+// Championship: Mon Apr 6
+SCHEDULE[63]={d:"Mon 4/6",t:"7:20 PM"};
+
 function upcomingGamesHTML(){
   var resultCount=Object.keys(RES).length;
   if(resultCount>=63)return'<div style="font-size:14px;font-weight:700;color:#2563eb">Tournament Complete! \ud83c\udfc6</div>';
-  // Find games that are ready to play: no result yet, but both teams are known
+  var liveKeys=Object.keys(LG);
+  // Group upcoming by day
   var upcoming=[];
   for(var g=1;g<=63;g++){
-    if(RES[g])continue; // already has result
-    if(LG[g])continue; // currently live
+    if(RES[g])continue;
     var tm=gT(g,null);
-    if(tm[0].t&&tm[1].t)upcoming.push({g:g,t1:tm[0].t,s1:tm[0].s,t2:tm[1].t,s2:tm[1].s});
-    if(upcoming.length>=4)break;
+    var sch=SCHEDULE[g]||{d:"TBD",t:"TBD"};
+    var isLive=!!LG[g];
+    if(tm[0].t&&tm[1].t) upcoming.push({g:g,t1:tm[0].t,s1:tm[0].s,t2:tm[1].t,s2:tm[1].s,d:sch.d,t:sch.t,live:isLive});
   }
   if(upcoming.length===0)return'<div style="font-size:12px;color:#9ca3af">Waiting for earlier rounds to finish</div>';
-  var h='';
+  // Group by day
+  var days={},dayOrder=[];
   upcoming.forEach(function(u){
-    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f0f0f0">';
-    h+='<div style="display:flex;align-items:center;gap:3px;flex:1;min-width:0">'+li(u.t1,16)+'<span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(u.s1?'('+u.s1+') ':'')+esc(u.t1)+'</span></div>';
-    h+='<span style="font-size:10px;color:#9ca3af;font-weight:700">vs</span>';
-    h+='<div style="display:flex;align-items:center;gap:3px;flex:1;min-width:0;justify-content:flex-end"><span style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(u.t2)+(u.s2?' ('+u.s2+')':'')+'</span>'+li(u.t2,16)+'</div>';
-    h+='</div>';
+    if(!days[u.d]){days[u.d]=[];dayOrder.push(u.d)}
+    days[u.d].push(u);
+  });
+  var h='';
+  dayOrder.forEach(function(day,di){
+    if(di>0)return; // Show the current/next game day
+    h+='<div style="font-size:10px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-top:'+(di>0?'8':'0')+'px;margin-bottom:4px">'+day+' MST</div>';
+    days[day].forEach(function(u){
+      h+='<div onclick="showGamePopup('+u.g+')" style="display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid #f0f0f0;font-size:10px;cursor:pointer" onmouseover="this.style.background=\'#f0f7ff\'" onmouseout="this.style.background=\'\'">';
+      h+='<span class="mono" style="font-size:9px;color:'+(u.live?'#dc2626':'#9ca3af')+';min-width:52px;font-weight:600">'+(u.live?'\u25cf LIVE':u.t)+'</span>';
+      h+='<div style="display:flex;align-items:center;gap:2px;flex:1;min-width:0">'+li(u.t1,14)+'<span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(u.s1?'('+u.s1+') ':'')+esc(u.t1)+'</span></div>';
+      h+='<span style="color:#9ca3af;font-weight:700;font-size:8px">vs</span>';
+      h+='<div style="display:flex;align-items:center;gap:2px;flex:1;min-width:0;justify-content:flex-end"><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(u.t2)+(u.s2?' ('+u.s2+')':'')+'</span>'+li(u.t2,14)+'</div>';
+      h+='</div>';
+    });
   });
   return h;
 }
@@ -496,7 +530,7 @@ var PP=[
 ];
 
 // STATE
-var RES={},LG={},S={v:"standings",pi:null,reg:"East",mode:"std",adm:false,pw:"",loggedIn:false},ST=[];
+var RES={},LG={},SC={},S={v:"standings",pi:null,reg:"East",mode:"std",adm:false,pw:"",loggedIn:false},ST=[];
 
 // Dual mode: server fetch with localStorage fallback
 var SERVER_MODE=false;
@@ -505,7 +539,7 @@ function saveLocal(){try{localStorage.setItem("bb2026",JSON.stringify({r:RES,l:L
 function fetchData(cb){
   document.getElementById("spinwrap").style.display="inline-block";
   fetch("/api/results").then(function(r){return r.json()}).then(function(d){
-    SERVER_MODE=true;RES=d.results||{};LG=d.liveGames||{};
+    SERVER_MODE=true;RES=d.results||{};LG=d.liveGames||{};SC=d.scores||{};
     var lf=d.lastFetch;
     document.getElementById("fstat").textContent=lf?"Last sync: "+new Date(lf).toLocaleTimeString():"Synced with server";
     document.getElementById("spinwrap").style.display="none";
@@ -637,10 +671,11 @@ h+='<div class="leg"><div class="li"><div class="ldot" style="background:#16a34a
 if(S.reg==="Final Four")h+=rFF(d);else h+=rReg(S.reg,d);
 h+='</div>';a.innerHTML=h}
 
-function muHTML(gid,picks,sts){var tm=gT(gid,picks),t1=tm[0].t,t2=tm[1].t,s1=tm[0].s,s2=tm[1].s,pk=picks[gid],ss=sts[gid]?sts[gid].s:"alive",lv=!!LG[gid],lgd=LG[gid];
+function muHTML(gid,picks,sts){var tm=gT(gid,picks),t1=tm[0].t,t2=tm[1].t,s1=tm[0].s,s2=tm[1].s,pk=picks[gid],ss=sts[gid]?sts[gid].s:"alive",lv=!!LG[gid],lgd=LG[gid],gsc=SC[gid];
 var bc={correct:"#dcfce7",wrong:"#fee2e2",eliminated:"#fee2e2",alive:"#dbeafe"};
-function row(t,s,bot){var ip=t===pk,cls="mt"+(bot?" bot":"")+(ip?" p"+ss[0]:""),nc="mn"+(ip?" pk "+ss:"");
-return'<div class="'+cls+'">'+(t?li(t,16):'<div class="mlp">?</div>')+'<span class="ms">'+(s||"")+'</span><span class="'+nc+'">'+(t?esc(t):"TBD")+'</span>'+(ip?'<div class="md '+ss+'"></div>':'')+'</div>'}
+function getScore(t){if(!gsc||!t)return"";if(gsc.t1===t)return gsc.s1;if(gsc.t2===t)return gsc.s2;return""}
+function row(t,s,bot){var ip=t===pk,cls="mt"+(bot?" bot":"")+(ip?" p"+ss[0]:""),nc="mn"+(ip?" pk "+ss:""),sc=getScore(t);
+return'<div class="'+cls+'">'+(t?li(t,16):'<div class="mlp">?</div>')+'<span class="ms">'+(s||"")+'</span><span class="'+nc+'">'+(t?esc(t):"TBD")+'</span>'+(sc!==""?'<span class="mono" style="font-size:10px;font-weight:700;color:#1a1a2e;margin-left:auto">'+sc+'</span>':'')+(ip?'<div class="md '+ss+'"></div>':'')+'</div>'}
 var liveScoreBar="";
 if(lv&&lgd){liveScoreBar='<div class="mlsc">'+esc(lgd.score)+' \u2022 '+esc(lgd.time)+'</div>'}
 return'<div class="mu'+(lv?" lv":"")+'" style="border-color:'+(lv?"#2563eb80":"")+'">'+(lv?'<div class="mlt">LIVE</div>':"")+row(t1,s1,false)+row(t2,s2,true)+liveScoreBar+'</div>'}
@@ -678,29 +713,37 @@ function forceRefresh(){
   fetch("/api/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:S.pw})})
   .then(function(r){return r.json()}).then(function(d){if(d.error){alert(d.error);return}var prevCount=Object.keys(RES).length;RES=d.results||{};var newCount=Object.keys(RES).length;LG=d.liveGames||{};if(newCount>prevCount)fireConfetti();render()}).catch(function(){alert("Network error")})}
 
-// LIVE GAME POPUP — shows who picked which team
-function showLiveGame(gid){
-  var lgd=LG[gid];if(!lgd)return;
+// GAME POPUP — shows who picked which team (works for live, upcoming, and completed games)
+function showLiveGame(gid){showGamePopup(gid)}
+function showGamePopup(gid){
   var tm=gT(gid,null),t1=tm[0].t,t2=tm[1].t;
-  var pickedT1=[],pickedT2=[],pickedOther=[];
+  if(!t1||!t2)return;
+  var lgd=LG[gid],gsc=SC[gid],sch=SCHEDULE[gid];
+  var pickedT1=[],pickedT2=[];
   PP.forEach(function(p){
     var pk=p.p[gid];
     if(pk===t1)pickedT1.push(p.n);
     else if(pk===t2)pickedT2.push(p.n);
-    else pickedOther.push({n:p.n,t:pk});
   });
   var ol=document.createElement("div");ol.className="lg-overlay";ol.onclick=function(e){if(e.target===ol)ol.remove()};
   var h='<div class="lg-popup">';
-  h+='<h3>Game '+gid+'</h3>';
-  h+='<div class="lg-score">'+esc(lgd.score)+'</div>';
-  h+='<div class="lg-time"><div class="ld"></div>LIVE \u2014 '+esc(lgd.time)+'</div>';
-  if(t1){h+='<div class="lg-sec"><div class="lg-sec-title">Picked '+esc(t1)+' ('+pickedT1.length+'/'+PP.length+')</div>';
+  h+='<h3 style="display:flex;align-items:center;gap:8px">'+li(t1,20)+' '+esc(t1)+' vs '+esc(t2)+' '+li(t2,20)+'</h3>';
+  if(lgd){
+    h+='<div class="lg-score">'+esc(lgd.score)+'</div>';
+    h+='<div class="lg-time"><div class="ld"></div>LIVE \u2014 '+esc(lgd.time)+'</div>';
+  }else if(gsc){
+    h+='<div class="lg-score">'+gsc.s1+' - '+gsc.s2+'</div>';
+    h+='<div style="font-size:11px;color:#16a34a;font-weight:600;margin-bottom:14px">FINAL \u2014 '+esc(RES[gid])+' wins</div>';
+  }else if(sch){
+    h+='<div style="font-size:13px;color:#2563eb;font-weight:600;margin-bottom:14px">'+sch.d+' at '+sch.t+'</div>';
+  }
+  if(t1){h+='<div class="lg-sec"><div class="lg-sec-title">'+li(t1,14)+' Picked '+esc(t1)+' ('+pickedT1.length+'/'+PP.length+')</div>';
     if(pickedT1.length===0)h+='<div style="font-size:12px;color:#9ca3af;padding:4px 0">No one</div>';
-    pickedT1.forEach(function(n){h+='<div class="lg-pick"><span class="lg-pick-name">'+esc(n)+'</span><div class="lg-pick-team" style="color:#2563eb">'+li(t1,14)+' '+esc(t1)+'</div></div>'});
+    pickedT1.forEach(function(n){h+='<div class="lg-pick"><span class="lg-pick-name">'+esc(n)+'</span></div>'});
   h+='</div>'}
-  if(t2){h+='<div class="lg-sec"><div class="lg-sec-title">Picked '+esc(t2)+' ('+pickedT2.length+'/'+PP.length+')</div>';
+  if(t2){h+='<div class="lg-sec"><div class="lg-sec-title">'+li(t2,14)+' Picked '+esc(t2)+' ('+pickedT2.length+'/'+PP.length+')</div>';
     if(pickedT2.length===0)h+='<div style="font-size:12px;color:#9ca3af;padding:4px 0">No one</div>';
-    pickedT2.forEach(function(n){h+='<div class="lg-pick"><span class="lg-pick-name">'+esc(n)+'</span><div class="lg-pick-team" style="color:#2563eb">'+li(t2,14)+' '+esc(t2)+'</div></div>'});
+    pickedT2.forEach(function(n){h+='<div class="lg-pick"><span class="lg-pick-name">'+esc(n)+'</span></div>'});
   h+='</div>'}
   h+='<button class="lg-close" onclick="this.closest(\'.lg-overlay\').remove()">Close</button>';
   h+='</div>';
