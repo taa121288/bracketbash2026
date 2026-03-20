@@ -80,7 +80,7 @@ function writeData(data) {
 // ──────────────────────────────────────────────
 function httpGet(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'BracketBash/1.0' } }, res => {
+    https.get(url, { headers: { 'User-Agent': 'HerbertHoops/1.0' } }, res => {
       let body = '';
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
@@ -287,7 +287,7 @@ app.post('/api/refresh', async (req, res) => {
 // ──────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
-  console.log('  🏀 BracketBash 2026 is running!');
+  console.log('  🏀 HerbertHoops 2026 is running!');
   console.log('  ─────────────────────────────────');
   console.log(`  Open:      http://localhost:${PORT}`);
   console.log(`  Admin:     http://localhost:${PORT}/#admin`);
