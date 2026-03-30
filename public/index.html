@@ -478,15 +478,12 @@ function upcomingGamesHTML(){
     h+='<div onclick="showGamePopup('+u.g+')" style="background:#fff;border:1px solid '+(u.live?"#2563eb":"#e0e0e0")+';border-radius:6px;padding:10px 12px;cursor:pointer;transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,.04)" onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,.1)\'" onmouseout="this.style.boxShadow=\'0 1px 3px rgba(0,0,0,.04)\'">';
     if(u.live&&lgd){h+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:6px"><div class="ld"></div><span style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px">LIVE \u2014 '+esc(lgd.time)+'</span></div>'}
     else if(gsc&&win){h+='<div style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FINAL</div>'}
-    /* Team 1 row */
     var s1=u.live&&lgd?lgd.score.split(" - ")[0]||"":"";
     var s2=u.live&&lgd?lgd.score.split(" - ")[1]||"":"";
     if(gsc){s1=gsc.s1;s2=gsc.s2}
     var w1=win===u.t1,w2=win===u.t2;
     h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0'+(w1?";font-weight:700":"")+'">'+li(u.t1,20)+'<span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#9ca3af;min-width:14px">'+(u.s1||"")+'</span><span style="font-size:13px;font-weight:'+(w1?"700":"600")+';color:'+(w1?"#16a34a":"#1a1a2e")+';flex:1">'+esc(u.t1)+'</span>'+(s1?'<span class="mono" style="font-size:13px;font-weight:700;color:#1a1a2e">'+s1+'</span>':'')+'</div>';
-    /* Team 2 row */
     h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid #f0f0f0'+(w2?";font-weight:700":"")+'">'+li(u.t2,20)+'<span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#9ca3af;min-width:14px">'+(u.s2||"")+'</span><span style="font-size:13px;font-weight:'+(w2?"700":"600")+';color:'+(w2?"#16a34a":"#1a1a2e")+';flex:1">'+esc(u.t2)+'</span>'+(s2?'<span class="mono" style="font-size:13px;font-weight:700;color:#1a1a2e">'+s2+'</span>':'')+'</div>';
-    /* Picks bar */
     var total=PP.length;
     h+='<div style="display:flex;align-items:center;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid #f0f0f0">';
     h+='<div style="flex:1;text-align:center"><span style="font-size:10px;font-weight:700;color:#2563eb">'+p1.length+'</span><span style="font-size:9px;color:#9ca3af"> picks</span></div>';
@@ -501,6 +498,54 @@ function upcomingGamesHTML(){
     h+='</div>';
   });
   h+='</div>';
+  /* Win probability simulation */
+  var remGames=[];
+  for(var g=1;g<=63;g++){
+    if(!RES[g]){var tm=gT(g,null);if(tm[0].t&&tm[1].t)remGames.push({g:g,t1:tm[0].t,t2:tm[1].t})}
+  }
+  if(remGames.length>0&&remGames.length<=10){
+    var scenarios=Math.pow(2,remGames.length);
+    var wins={};PP.forEach(function(p){wins[p.n]=0});
+    for(var sc=0;sc<scenarios;sc++){
+      var simRES={};for(var k in RES)simRES[k]=RES[k];
+      for(var ri=0;ri<remGames.length;ri++){
+        var bit=(sc>>ri)&1;
+        simRES[remGames[ri].g]=bit===0?remGames[ri].t1:remGames[ri].t2;
+      }
+      /* For later-round games that depend on earlier sim results, resolve them */
+      var changed=true;
+      while(changed){changed=false;for(var g=1;g<=63;g++){if(simRES[g])continue;var nd=GT[g];if(nd.t==="l"&&simRES[nd.f[0]]&&simRES[nd.f[1]]){/* game teams now known but not in remGames — skip */}}}
+      /* Score each player under this scenario */
+      var scores=PP.map(function(p){
+        var pts=0;
+        for(var g=1;g<=63;g++){
+          var pk=p.p[g],ri2=GR[g],bp=RP[ri2],sd=TS[pk]||1;
+          var mpts=S.mode==="sb"?bp+sd:S.mode==="sm"?bp*sd:bp;
+          if(simRES[g]&&simRES[g]===pk)pts+=mpts;
+        }
+        return{n:p.n,pts:pts};
+      });
+      scores.sort(function(a,b){return b.pts-a.pts});
+      var topS=scores[0].pts;
+      /* Count all players tied at top */
+      var tiedCount=scores.filter(function(x){return x.pts===topS}).length;
+      scores.forEach(function(x){if(x.pts===topS)wins[x.n]+=1/tiedCount});
+    }
+    h+='<div style="margin-top:12px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px">';
+    h+='<div style="font-size:13px;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Win Probability</div>';
+    var wpArr=[];PP.forEach(function(p){wpArr.push({n:p.n,w:wins[p.n],pct:Math.round(wins[p.n]/scenarios*1000)/10})});
+    wpArr.sort(function(a,b){return b.pct-a.pct});
+    wpArr.forEach(function(wp){
+      var barCol=wp.pct>=30?"#16a34a":wp.pct>=10?"#2563eb":wp.pct>0?"#f59e0b":"#dc2626";
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-top:6px">';
+      h+='<span style="font-size:12px;font-weight:600;color:#1a1a2e;min-width:80px;white-space:nowrap">'+esc(wp.n.split(" ")[0])+'</span>';
+      h+='<div style="flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden"><div style="width:'+wp.pct+'%;height:100%;background:'+barCol+';border-radius:4px;transition:width .3s"></div></div>';
+      h+='<span class="mono" style="font-size:12px;font-weight:700;color:'+barCol+';min-width:45px;text-align:right">'+wp.pct+'%</span>';
+      h+='</div>';
+    });
+    h+='<div style="font-size:9px;color:#9ca3af;margin-top:8px;text-align:center">Based on '+scenarios+' possible outcomes of '+remGames.length+' remaining game'+(remGames.length>1?"s":"")+'</div>';
+    h+='</div>';
+  }
   return h;
 }
 
